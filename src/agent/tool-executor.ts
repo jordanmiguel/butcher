@@ -64,7 +64,18 @@ export class ToolExecutor {
       return acc;
     }, {});
 
-    const prompt = buildToolSelectionPrompt(task.description, entitiesByType);
+    const matchIdentifiers = Object.fromEntries(
+      Object.entries(entitiesByType).filter(([type]) => {
+        const normalizedType = type.toLowerCase();
+        return (normalizedType.includes('fixture') || normalizedType.includes('match'))
+          && (normalizedType.includes('id') || normalizedType === 'fixture' || normalizedType === 'match');
+      })
+    );
+
+    const prompt = buildToolSelectionPrompt(task.description, entitiesByType, {
+      markets: ['1X2', 'Over/Under', 'BTTS', 'Corners', 'Cards'],
+      matchIdentifiers,
+    });
     const systemPrompt = getToolSelectionSystemPrompt(this.formatToolDescriptions());
 
     const response = await callLlm(prompt, {
