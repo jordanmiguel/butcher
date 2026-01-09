@@ -8,8 +8,8 @@ import { z } from 'zod';
  * Schema for entity extraction.
  */
 export const EntitySchema = z.object({
-  type: z.enum(['ticker', 'date', 'metric', 'company', 'period', 'other'])
-    .describe('The type of entity'),
+  type: z.string()
+    .describe('The type of entity (e.g., team, league, match_date, market, bet_type, odds)'),
   value: z.string()
     .describe('The raw value from the query'),
 });

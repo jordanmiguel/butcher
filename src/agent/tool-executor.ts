@@ -56,15 +56,15 @@ export class ToolExecutor {
     task: Task,
     understanding: Understanding
   ): Promise<ToolCallStatus[]> {
-    const tickers = understanding.entities
-      .filter(e => e.type === 'ticker')
-      .map(e => e.value);
-    
-    const periods = understanding.entities
-      .filter(e => e.type === 'period')
-      .map(e => e.value);
+    const entitiesByType = understanding.entities.reduce<Record<string, string[]>>((acc, entity) => {
+      if (!acc[entity.type]) {
+        acc[entity.type] = [];
+      }
+      acc[entity.type].push(entity.value);
+      return acc;
+    }, {});
 
-    const prompt = buildToolSelectionPrompt(task.description, tickers, periods);
+    const prompt = buildToolSelectionPrompt(task.description, entitiesByType);
     const systemPrompt = getToolSelectionSystemPrompt(this.formatToolDescriptions());
 
     const response = await callLlm(prompt, {
@@ -197,4 +197,3 @@ export class ToolExecutor {
     }));
   }
 }
-
