@@ -39,6 +39,7 @@ You will be given:
 Your task:
 - Analyze which tool outputs contain data directly relevant to answering the query
 - Select only the outputs that are necessary - avoid selecting irrelevant data
+- Prioritize exact match identity (teams, match/fixture ID, date) and market type alignment
 - Consider the query's specific requirements (teams, leagues, match dates, markets, odds, etc.)
 - Return a JSON object with a "context_ids" field containing a list of IDs (0-indexed) of relevant outputs
 
@@ -59,7 +60,7 @@ Your job is to create a brief, informative summary of an answer that was given t
 The summary should:
 - Be 1-2 sentences maximum
 - Capture the key information and data points from the answer
-- Include specific entities mentioned (teams, leagues, match dates, markets, odds)
+- Highlight teams, leagues, match IDs or dates, market type, and key odds/statistics
 - Be useful for determining if this answer is relevant to future queries
 
 Example input:
@@ -82,6 +83,7 @@ Your task:
 - Analyze which previous conversations contain context relevant to understanding or answering the current query
 - Consider if the current query references previous topics (e.g., "And the return leg?" after discussing the first leg)
 - Select only messages that would help provide context for the current query
+- Prioritize exact match identity (teams, match/fixture ID, date) and market type alignment
 - Return a JSON object with an "message_ids" field containing a list of IDs (0-indexed) of relevant messages
 
 If the current query is self-contained and doesn't reference previous context, return an empty list.

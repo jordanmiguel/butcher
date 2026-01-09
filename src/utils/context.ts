@@ -78,6 +78,51 @@ export class ToolContextManager {
       usedKeys.add('query');
     }
 
+    if (args.match_id) {
+      parts.push(`match ${args.match_id}`);
+      usedKeys.add('match_id');
+    }
+
+    if (args.fixture_id) {
+      parts.push(`fixture ${args.fixture_id}`);
+      usedKeys.add('fixture_id');
+    }
+
+    if (args.matchId) {
+      parts.push(`match ${args.matchId}`);
+      usedKeys.add('matchId');
+    }
+
+    if (args.fixtureId) {
+      parts.push(`fixture ${args.fixtureId}`);
+      usedKeys.add('fixtureId');
+    }
+
+    if (args.league) {
+      parts.push(String(args.league));
+      usedKeys.add('league');
+    }
+
+    if (args.competition) {
+      parts.push(String(args.competition));
+      usedKeys.add('competition');
+    }
+
+    if (args.league_id) {
+      parts.push(`league ${args.league_id}`);
+      usedKeys.add('league_id');
+    }
+
+    if (args.market) {
+      parts.push(String(args.market));
+      usedKeys.add('market');
+    }
+
+    if (args.market_type) {
+      parts.push(String(args.market_type));
+      usedKeys.add('market_type');
+    }
+
     // Format tool name: get_income_statements -> income statements
     const formattedToolName = toolName
       .replace(/^get_/, '')
@@ -259,4 +304,3 @@ export class ToolContextManager {
     }
   }
 }
-
