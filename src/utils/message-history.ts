@@ -57,7 +57,8 @@ export class MessageHistory {
     const prompt = `Query: "${query}"
 Answer: "${answerPreview}"
 
-Generate a brief 1-2 sentence summary of this answer.`;
+Generate a brief 1-2 sentence summary of this answer.
+Emphasize teams, leagues, market type, and key odds/statistics.`;
 
     try {
       const response = await callLlm(prompt, {
