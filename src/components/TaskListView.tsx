@@ -68,9 +68,15 @@ function formatToolDescription(toolCall: ToolCallStatus): string {
     case 'list_files':
       return `Listing files in ${args.path || 'directory'}`;
     case 'get_stock_price':
-      return `Getting stock price for ${args.ticker || 'ticker'}`;
+      return `Getting matchup snapshot for ${args.team || args.fixture || 'match'}`;
     case 'get_financial_data':
-      return `Getting financial data for ${args.ticker || 'ticker'}`;
+      return `Getting market data for ${args.team || args.fixture || 'match'}`;
+    case 'get_football_match_odds':
+      return `Getting match odds for ${args.team || args.fixture || 'match'}`;
+    case 'get_football_match_schedule':
+      return `Getting match schedule for ${args.team || args.league || 'league'}`;
+    case 'get_football_predictions':
+      return `Getting match predictions for ${args.team || args.fixture || 'match'}`;
     default:
       // Fallback: replace underscores with spaces and add args
       const displayName = tool.replace(/_/g, ' ');
