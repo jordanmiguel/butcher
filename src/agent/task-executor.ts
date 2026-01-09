@@ -219,6 +219,8 @@ export class TaskExecutor {
     taskResults: Map<string, TaskResult>,
     plan: Plan
   ): string {
+    const maxContextItems = 12;
+    const maxContextChars = 100000;
     const parts: string[] = [];
 
     for (const task of plan.tasks) {
@@ -233,8 +235,12 @@ export class TaskExecutor {
     
     if (pointers.length > 0) {
       const contexts = this.contextManager.loadContexts(pointers.map(p => p.filepath));
-      
+      let contextChars = 0;
+      let contextCount = 0;
       for (const ctx of contexts) {
+        if (contextCount >= maxContextItems) {
+          break;
+        }
         const toolName = ctx.toolName || 'unknown';
         const args = ctx.args || {};
         const result = ctx.result;
@@ -242,12 +248,22 @@ export class TaskExecutor {
         const sourceLine = sourceUrls.length > 0 
           ? `\nSource URLs: ${sourceUrls.join(', ')}` 
           : '';
-        
-        parts.push(`Data from ${toolName} (${JSON.stringify(args)}):${sourceLine}\n${JSON.stringify(result, null, 2)}`);
+        const block = `Data from ${toolName} (${JSON.stringify(args)}):${sourceLine}\n${JSON.stringify(result, null, 2)}`;
+
+        if (contextChars + block.length > maxContextChars) {
+          const remaining = maxContextChars - contextChars;
+          if (remaining > 0) {
+            parts.push(`${block.slice(0, remaining)}\n[context truncated due to size limit]`);
+          }
+          break;
+        }
+
+        parts.push(block);
+        contextChars += block.length;
+        contextCount += 1;
       }
     }
 
     return parts.length > 0 ? parts.join('\n\n---\n\n') : 'No data available.';
   }
 }
-

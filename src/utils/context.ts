@@ -6,6 +6,8 @@ import { CONTEXT_SELECTION_SYSTEM_PROMPT } from '../agent/prompts.js';
 import { SelectedContextsSchema } from '../agent/schemas.js';
 import type { ToolSummary } from '../agent/schemas.js';
 
+const MAX_CONTEXT_FALLBACK_POINTERS = 20;
+
 interface ContextPointer {
   filepath: string;
   filename: string;
@@ -299,8 +301,16 @@ export class ToolContextManager {
         .filter((idx) => idx >= 0 && idx < availablePointers.length)
         .map((idx) => availablePointers[idx].filepath);
     } catch (e) {
-      console.warn(`Warning: Context selection failed: ${e}, loading all contexts`);
-      return availablePointers.map((ptr) => ptr.filepath);
+      const queryId = this.hashQuery(query);
+      const matchingPointers = availablePointers.filter((ptr) => ptr.queryId === queryId);
+      const fallbackPointers =
+        matchingPointers.length > 0
+          ? matchingPointers
+          : availablePointers.slice(-MAX_CONTEXT_FALLBACK_POINTERS);
+      console.warn(
+        `Warning: Context selection failed: ${e}, loading ${fallbackPointers.length} fallback contexts`
+      );
+      return fallbackPointers.map((ptr) => ptr.filepath);
     }
   }
 }
