@@ -295,6 +295,24 @@ export function CLI() {
       return;
     }
 
+    if (pendingProvider === 'zai') {
+      const fullModelId = `zai:${modelId}`;
+      if (checkApiKeyExistsForProvider(pendingProvider)) {
+        setProvider(pendingProvider);
+        setModel(fullModelId);
+        setSetting('provider', pendingProvider);
+        setSetting('modelId', fullModelId);
+        messageHistoryRef.current.setModel(fullModelId);
+        setPendingProvider(null);
+        setPendingModels([]);
+        setState('idle');
+      } else {
+        setPendingModels([fullModelId]); // Store the selected model
+        setState('api_key_confirm');
+      }
+      return;
+    }
+
     // For cloud providers, check API key
     if (checkApiKeyExistsForProvider(pendingProvider)) {
       // API key exists, complete the switch

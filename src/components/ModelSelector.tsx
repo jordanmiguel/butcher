@@ -25,6 +25,11 @@ const PROVIDERS: Provider[] = [
     models: ['gemini-3-flash-preview', 'gemini-3-pro-preview'],
   },
   {
+    displayName: 'Z.AI',
+    providerId: 'zai',
+    models: ['glm-4.7'],
+  },
+  {
     displayName: 'Ollama',
     providerId: 'ollama',
     models: [], // Populated dynamically from local Ollama API
@@ -42,12 +47,16 @@ export function getDefaultModelForProvider(providerId: string): string | undefin
 }
 
 export function getProviderIdForModel(modelId: string): string | undefined {
+  const normalizedModelId = modelId.toLowerCase();
   // For ollama models, they're prefixed with "ollama:"
   if (modelId.startsWith('ollama:')) {
     return 'ollama';
   }
+  if (normalizedModelId.startsWith('zai:')) {
+    return 'zai';
+  }
   for (const provider of PROVIDERS) {
-    if (provider.models.includes(modelId)) {
+    if (provider.models.some((model) => model.toLowerCase() === normalizedModelId)) {
       return provider.providerId;
     }
   }
@@ -125,7 +134,9 @@ export function ModelSelector({ providerId, models, currentModel, onSelect }: Mo
   // For Ollama, the currentModel is stored with "ollama:" prefix, but models list doesn't have it
   const normalizedCurrentModel = providerId === 'ollama' && currentModel?.startsWith('ollama:')
     ? currentModel.replace(/^ollama:/, '')
-    : currentModel;
+    : providerId === 'zai'
+      ? currentModel?.replace(/^zai:/i, '').toLowerCase()
+      : currentModel;
 
   const [selectedIndex, setSelectedIndex] = useState(() => {
     if (normalizedCurrentModel) {
