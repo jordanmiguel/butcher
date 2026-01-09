@@ -14,7 +14,8 @@ const FixtureStatsInputSchema = z.object({
 
 export const getFootballFixtureStatistics = new DynamicStructuredTool({
   name: 'get_football_fixture_statistics',
-  description: 'Fetches match statistics for a specific fixture (possession, shots, cards, etc.).',
+  description:
+    'Fetches match statistics for a specific fixture (possession, shots, corners, cards, etc.).',
   schema: FixtureStatsInputSchema,
   func: async (input) => {
     const teamName = input.team ? normalizeTeam(input.team) : undefined;

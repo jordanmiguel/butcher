@@ -16,14 +16,17 @@ const MatchOddsInputSchema = z.object({
   market: z
     .string()
     .default('Match Winner')
-    .describe('Market type or bet name (e.g. Match Winner, BTTS, Goals Over/Under).'),
+    .describe(
+      'Market type or bet name (e.g. 1X2/Match Winner, Over/Under, BTTS, Corners, Cards).'
+    ),
   page: z.number().int().min(1).max(20).optional().describe('Pagination page number.'),
   timezone: z.string().optional().describe('Timezone identifier from the API timezone list.'),
 });
 
 export const getFootballMatchOdds = new DynamicStructuredTool({
   name: 'get_football_match_odds',
-  description: 'Fetches betting odds for a specific football match and market.',
+  description:
+    'Fetches betting odds for a specific football match and market (1X2, Over/Under, BTTS, Corners, Cards).',
   schema: MatchOddsInputSchema,
   func: async (input) => {
     const leagueName = input.league ? normalizeLeague(input.league) : undefined;

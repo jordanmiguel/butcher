@@ -178,7 +178,11 @@ export function getToolSelectionSystemPrompt(toolDescriptions: string): string {
  */
 export function buildToolSelectionPrompt(
   taskDescription: string,
-  entitiesByType: Record<string, string[]>
+  entitiesByType: Record<string, string[]>,
+  options?: {
+    markets?: string[];
+    matchIdentifiers?: Record<string, string[]>;
+  }
 ): string {
   const entityLines = Object.entries(entitiesByType)
     .sort(([left], [right]) => left.localeCompare(right))
@@ -187,12 +191,30 @@ export function buildToolSelectionPrompt(
     ? entityLines.join('\n')
     : 'none specified';
 
+  const markets = options?.markets?.length
+    ? options.markets.join(', ')
+    : '1X2, Over/Under, BTTS, Corners, Cards';
+  const matchIdentifierLines = options?.matchIdentifiers
+    ? Object.entries(options.matchIdentifiers)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([type, values]) => `- ${type}: ${values.join(', ') || 'none specified'}`)
+    : [];
+  const matchIdentifiersSection = matchIdentifierLines.length > 0
+    ? matchIdentifierLines.join('\n')
+    : 'none specified';
+
   return `Task: ${taskDescription}
 
 Entities by type:
 ${entitiesSection}
 
-Call the tools needed for this task.`;
+Markets to consider:
+${markets}
+
+Match identifiers (use fixture_id when available):
+${matchIdentifiersSection}
+
+Call the tools needed for this task. For odds tools, pass the market using the "market" argument.`;
 }
 
 // ============================================================================
