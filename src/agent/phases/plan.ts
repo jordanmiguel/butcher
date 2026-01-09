@@ -1,4 +1,4 @@
-import { callLlm } from '../../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS } from '../../model/llm.js';
 import { PlanSchema, type PlanOutput } from '../schemas.js';
 import { getPlanSystemPrompt, buildPlanUserPrompt } from '../prompts.js';
 import type { PlanInput, Plan, Task, TaskType, TaskResult } from '../state.js';
@@ -50,6 +50,7 @@ export class PlanPhase {
       systemPrompt,
       model: this.model,
       outputSchema: PlanSchema,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
 
     const result = response as PlanOutput;

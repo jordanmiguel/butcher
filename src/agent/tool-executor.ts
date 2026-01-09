@@ -1,6 +1,6 @@
 import { StructuredToolInterface } from '@langchain/core/tools';
 import { AIMessage } from '@langchain/core/messages';
-import { callLlm } from '../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS } from '../model/llm.js';
 import { ToolContextManager } from '../utils/context.js';
 import { getToolSelectionSystemPrompt, buildToolSelectionPrompt } from './prompts.js';
 import type { Task, ToolCallStatus, Understanding } from './state.js';
@@ -82,6 +82,7 @@ export class ToolExecutor {
       model: SMALL_MODEL,
       systemPrompt,
       tools: this.tools,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
 
     const toolCalls = this.extractToolCalls(response);

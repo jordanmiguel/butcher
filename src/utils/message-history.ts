@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { callLlm, DEFAULT_MODEL } from '../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS, DEFAULT_MODEL } from '../model/llm.js';
 import { MESSAGE_SUMMARY_SYSTEM_PROMPT, MESSAGE_SELECTION_SYSTEM_PROMPT } from '../agent/prompts.js';
 import { z } from 'zod';
 
@@ -64,6 +64,7 @@ Emphasize teams, leagues, market type, and key odds/statistics.`;
       const response = await callLlm(prompt, {
         systemPrompt: MESSAGE_SUMMARY_SYSTEM_PROMPT,
         model: this.model,
+        maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
       });
       return typeof response === 'string' ? response.trim() : String(response).trim();
     } catch {
@@ -122,6 +123,7 @@ Select which previous messages are relevant to understanding or answering the cu
         systemPrompt: MESSAGE_SELECTION_SYSTEM_PROMPT,
         model: this.model,
         outputSchema: SelectedMessagesSchema,
+        maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
       });
 
       const selectedIds = (response as { message_ids: number[] }).message_ids || [];

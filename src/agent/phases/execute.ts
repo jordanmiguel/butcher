@@ -1,4 +1,4 @@
-import { callLlm } from '../../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS } from '../../model/llm.js';
 import { getExecuteSystemPrompt, buildExecuteUserPrompt } from '../prompts.js';
 import type { ExecuteInput, TaskResult } from '../state.js';
 
@@ -36,6 +36,7 @@ export class ExecutePhase {
     const response = await callLlm(userPrompt, {
       systemPrompt,
       model: this.model,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
 
     const output = typeof response === 'string' 

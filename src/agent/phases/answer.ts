@@ -1,4 +1,4 @@
-import { callLlmStream } from '../../model/llm.js';
+import { callLlmStream, DEFAULT_MAX_PROMPT_TOKENS } from '../../model/llm.js';
 import { getFinalAnswerSystemPrompt, buildFinalAnswerUserPrompt } from '../prompts.js';
 import type { AnswerInput } from '../state.js';
 import type { ToolContextManager } from '../../utils/context.js';
@@ -65,7 +65,7 @@ export class AnswerPhase {
     return callLlmStream(userPrompt, {
       systemPrompt,
       model: this.model,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
   }
 }
-
