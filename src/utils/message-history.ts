@@ -13,6 +13,14 @@ export interface Message {
   summary: string; // LLM-generated summary of the answer
 }
 
+type AnswerContextMode = 'summary' | 'full' | 'auto';
+
+export interface MessageHistoryOptions {
+  answerContextMode?: AnswerContextMode;
+  answerTokenBudget?: number;
+  maxAnswerChars?: number;
+}
+
 /**
  * Schema for LLM to select relevant messages
  */
@@ -29,9 +37,15 @@ export class MessageHistory {
   private messages: Message[] = [];
   private model: string;
   private relevantMessagesByQuery: Map<string, Message[]> = new Map();
+  private answerContextMode: AnswerContextMode;
+  private answerTokenBudget: number;
+  private maxAnswerChars?: number;
 
-  constructor(model: string = DEFAULT_MODEL) {
+  constructor(model: string = DEFAULT_MODEL, options: MessageHistoryOptions = {}) {
     this.model = model;
+    this.answerContextMode = options.answerContextMode ?? 'summary';
+    this.answerTokenBudget = options.answerTokenBudget ?? 800;
+    this.maxAnswerChars = options.maxAnswerChars ?? 2000;
   }
 
   /**
@@ -46,6 +60,29 @@ export class MessageHistory {
    */
   setModel(model: string): void {
     this.model = model;
+  }
+
+  private estimateTokenCount(text: string): number {
+    return Math.ceil(text.length / 4);
+  }
+
+  private getFullAnswer(message: Message): string {
+    if (this.maxAnswerChars === undefined) {
+      return message.answer;
+    }
+    return message.answer.slice(0, this.maxAnswerChars);
+  }
+
+  private decideAnswerContextMode(messages: Message[]): AnswerContextMode {
+    if (this.answerContextMode !== 'auto') {
+      return this.answerContextMode;
+    }
+
+    const estimatedTokens = messages.reduce((total, message) => {
+      return total + this.estimateTokenCount(this.getFullAnswer(message));
+    }, 0);
+
+    return estimatedTokens <= this.answerTokenBudget ? 'full' : 'summary';
   }
 
   /**
@@ -161,8 +198,13 @@ Select which previous messages are relevant to understanding or answering the cu
       return '';
     }
 
+    const mode = this.decideAnswerContextMode(messages);
+
     return messages
-      .map((message) => `User: ${message.query}\nAssistant: ${message.answer}`)
+      .map((message) => {
+        const assistantText = mode === 'summary' ? message.summary : this.getFullAnswer(message);
+        return `User: ${message.query}\nAssistant: ${assistantText}`;
+      })
       .join('\n\n');
   }
 
