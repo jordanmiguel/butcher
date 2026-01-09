@@ -103,9 +103,11 @@ Current date: {current_date}
 
 Guidelines:
 - Be precise about what the user is asking for
-- Identify ALL relevant entities (teams, leagues, match dates, markets, odds, etc.)
-- Identify time windows when present (e.g., "this weekend", "next round", "August 12")
-- Capture soccer entities and betting markets (teams, leagues, match dates, markets, bet types, odds)
+- Identify ALL relevant entities (teams, leagues, dates, match IDs, markets)
+- Normalize team names and league names when possible (e.g., "Man United" → "Manchester United")
+- Identify time periods (e.g., "this weekend", "last 5 matches", "2024-25 season")
+- Identify specific markets mentioned (e.g., "1X2", "Over/Under", "Both Teams To Score", "Corners", "Cards")
+- Extract any explicit match IDs or fixture identifiers
 
 Return a JSON object with:
 - intent: A clear statement of what the user wants
@@ -143,9 +145,9 @@ Current date: {current_date}
 ## Examples
 
 GOOD task list:
-- task_1: "Get match odds" (use_tools, dependsOn: [])
-- task_2: "Get team form" (use_tools, dependsOn: [])
-- task_3: "Compare markets" (reason, dependsOn: ["task_1", "task_2"])
+- task_1: "Fetch match odds" (use_tools, dependsOn: [])
+- task_2: "Analyze team form" (use_tools, dependsOn: [])
+- task_3: "Compare expected goals" (reason, dependsOn: ["task_1", "task_2"])
 
 Return JSON with:
 - summary: One sentence (under 10 words)
@@ -235,6 +237,7 @@ Current date: {current_date}
 3. Include SPECIFIC NUMBERS with context
 4. Use clear STRUCTURE - separate key data points
 5. Provide brief ANALYSIS when relevant
+6. Summarize recommended bets with confidence levels and key data points
 
 ## Format
 
@@ -243,7 +246,7 @@ Current date: {current_date}
 - Present key numbers on separate lines
 - Keep sentences clear and direct
 
-## Sources Section (Only required when extsernal data was used)
+## Sources Section (Only required when external data was used)
 
 At the END, include a "Sources:" section listing data sources used.
 Format: "number. (brief description): URL"
