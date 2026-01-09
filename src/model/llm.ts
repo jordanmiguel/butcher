@@ -88,15 +88,16 @@ const MODEL_PROVIDERS: Record<string, ModelFactory> = {
 };
 
 const ZAI_MODEL_PREFIX = 'zai:';
-const ZAI_MODELS = new Set(['glm-4.7']);
+const ZAI_MODELS = new Set(['glm-4.7', 'glm-4.5-air']);
 
 function isZaiModel(modelName: string): boolean {
-  return modelName.startsWith(ZAI_MODEL_PREFIX) || ZAI_MODELS.has(modelName);
+  const normalized = modelName.toLowerCase();
+  return normalized.startsWith(ZAI_MODEL_PREFIX) || ZAI_MODELS.has(normalized);
 }
 
 function normalizeZaiModel(modelName: string): string {
-  return modelName.startsWith(ZAI_MODEL_PREFIX)
-    ? modelName.replace(/^zai:/, '')
+  return modelName.toLowerCase().startsWith(ZAI_MODEL_PREFIX)
+    ? modelName.replace(/^zai:/i, '')
     : modelName;
 }
 
