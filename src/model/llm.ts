@@ -87,6 +87,27 @@ const MODEL_PROVIDERS: Record<string, ModelFactory> = {
     }),
 };
 
+const ZAI_MODEL_PREFIX = 'zai:';
+const ZAI_MODELS = new Set(['glm-4.7']);
+
+function isZaiModel(modelName: string): boolean {
+  return modelName.startsWith(ZAI_MODEL_PREFIX) || ZAI_MODELS.has(modelName);
+}
+
+function normalizeZaiModel(modelName: string): string {
+  return modelName.startsWith(ZAI_MODEL_PREFIX)
+    ? modelName.replace(/^zai:/, '')
+    : modelName;
+}
+
+const ZAI_MODEL_FACTORY: ModelFactory = (name, opts) =>
+  new ChatOpenAI({
+    model: name,
+    ...opts,
+    apiKey: getApiKey('ZAI_API_KEY', 'Z.AI'),
+    baseURL: process.env.ZAI_BASE_URL ?? 'https://api.z.ai/api/coding/paas/v4',
+  });
+
 const DEFAULT_MODEL_FACTORY: ModelFactory = (name, opts) =>
   new ChatOpenAI({
     model: name,
@@ -99,6 +120,9 @@ export function getChatModel(
   streaming: boolean = false
 ): BaseChatModel {
   const opts: ModelOpts = { streaming };
+  if (isZaiModel(modelName)) {
+    return ZAI_MODEL_FACTORY(normalizeZaiModel(modelName), opts);
+  }
   const prefix = Object.keys(MODEL_PROVIDERS).find((p) => modelName.startsWith(p));
   const factory = prefix ? MODEL_PROVIDERS[prefix] : DEFAULT_MODEL_FACTORY;
   return factory(modelName, opts);
