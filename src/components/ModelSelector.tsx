@@ -25,6 +25,11 @@ const PROVIDERS: Provider[] = [
     models: ['gemini-3-flash-preview', 'gemini-3-pro-preview'],
   },
   {
+    displayName: 'Z.AI',
+    providerId: 'zai',
+    models: ['glm-4.7'],
+  },
+  {
     displayName: 'Ollama',
     providerId: 'ollama',
     models: [], // Populated dynamically from local Ollama API
