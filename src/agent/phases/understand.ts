@@ -1,4 +1,4 @@
-import { callLlm } from '../../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS } from '../../model/llm.js';
 import { UnderstandingSchema } from '../schemas.js';
 import { getUnderstandSystemPrompt, buildUnderstandUserPrompt } from '../prompts.js';
 import type { UnderstandInput, Understanding } from '../state.js';
@@ -45,6 +45,7 @@ export class UnderstandPhase {
       systemPrompt,
       model: this.model,
       outputSchema: UnderstandingSchema,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
 
     const result = response as { intent: string; entities: Array<{ type: string; value: string }> };

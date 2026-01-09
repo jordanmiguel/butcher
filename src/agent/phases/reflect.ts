@@ -1,4 +1,4 @@
-import { callLlm } from '../../model/llm.js';
+import { callLlm, DEFAULT_MAX_PROMPT_TOKENS } from '../../model/llm.js';
 import { ReflectionSchema, type ReflectionOutput } from '../schemas.js';
 import { getReflectSystemPrompt, buildReflectUserPrompt } from '../prompts.js';
 import type { ReflectInput, ReflectionResult, Plan, TaskResult } from '../state.js';
@@ -58,6 +58,7 @@ export class ReflectPhase {
       systemPrompt,
       model: this.model,
       outputSchema: ReflectionSchema,
+      maxPromptTokens: DEFAULT_MAX_PROMPT_TOKENS,
     });
 
     const result = response as ReflectionOutput;
@@ -108,4 +109,3 @@ export class ReflectPhase {
     return parts.join('\n');
   }
 }
-

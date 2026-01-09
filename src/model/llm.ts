@@ -11,6 +11,32 @@ import { DEFAULT_SYSTEM_PROMPT } from '../agent/prompts.js';
 
 export const DEFAULT_PROVIDER = 'openai';
 export const DEFAULT_MODEL = 'gpt-5.2';
+export const DEFAULT_MAX_PROMPT_TOKENS = 6000;
+
+export function estimateTokenCount(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return Math.ceil(trimmed.length / 4);
+}
+
+function trimPromptToBudget(prompt: string, maxTokens: number): string {
+  if (estimateTokenCount(prompt) <= maxTokens) {
+    return prompt;
+  }
+
+  const lines = prompt.split('\n');
+  while (lines.length > 1 && estimateTokenCount(lines.join('\n')) > maxTokens) {
+    lines.shift();
+  }
+
+  let trimmed = lines.join('\n').trimStart();
+  if (estimateTokenCount(trimmed) > maxTokens) {
+    const maxChars = Math.max(maxTokens * 4, 0);
+    trimmed = trimmed.slice(-maxChars);
+  }
+
+  return trimmed;
+}
 
 // Generic retry helper with exponential backoff
 async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
@@ -83,11 +109,21 @@ interface CallLlmOptions {
   systemPrompt?: string;
   outputSchema?: z.ZodType<unknown>;
   tools?: StructuredToolInterface[];
+  maxPromptTokens?: number;
 }
 
 export async function callLlm(prompt: string, options: CallLlmOptions = {}): Promise<unknown> {
-  const { model = DEFAULT_MODEL, systemPrompt, outputSchema, tools } = options;
+  const {
+    model = DEFAULT_MODEL,
+    systemPrompt,
+    outputSchema,
+    tools,
+    maxPromptTokens = DEFAULT_MAX_PROMPT_TOKENS,
+  } = options;
   const finalSystemPrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
+  const systemTokens = estimateTokenCount(finalSystemPrompt);
+  const budgetForUserPrompt = Math.max(maxPromptTokens - systemTokens, 0);
+  const trimmedPrompt = trimPromptToBudget(prompt, budgetForUserPrompt);
 
   const promptTemplate = ChatPromptTemplate.fromMessages([
     ['system', finalSystemPrompt],
@@ -107,7 +143,7 @@ export async function callLlm(prompt: string, options: CallLlmOptions = {}): Pro
 
   const chain = promptTemplate.pipe(runnable);
 
-  const result = await withRetry(() => chain.invoke({ prompt }));
+  const result = await withRetry(() => chain.invoke({ prompt: trimmedPrompt }));
 
   // If no outputSchema and no tools, extract content from AIMessage
   // When tools are provided, return the full AIMessage to preserve tool_calls
@@ -119,10 +155,17 @@ export async function callLlm(prompt: string, options: CallLlmOptions = {}): Pro
 
 export async function* callLlmStream(
   prompt: string,
-  options: { model?: string; systemPrompt?: string } = {}
+  options: { model?: string; systemPrompt?: string; maxPromptTokens?: number } = {}
 ): AsyncGenerator<string> {
-  const { model = DEFAULT_MODEL, systemPrompt } = options;
+  const {
+    model = DEFAULT_MODEL,
+    systemPrompt,
+    maxPromptTokens = DEFAULT_MAX_PROMPT_TOKENS,
+  } = options;
   const finalSystemPrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
+  const systemTokens = estimateTokenCount(finalSystemPrompt);
+  const budgetForUserPrompt = Math.max(maxPromptTokens - systemTokens, 0);
+  const trimmedPrompt = trimPromptToBudget(prompt, budgetForUserPrompt);
 
   const promptTemplate = ChatPromptTemplate.fromMessages([
     ['system', finalSystemPrompt],
@@ -135,7 +178,7 @@ export async function* callLlmStream(
   // For streaming, we handle retry at the connection level
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const stream = await chain.stream({ prompt });
+      const stream = await chain.stream({ prompt: trimmedPrompt });
 
       for await (const chunk of stream) {
         if (chunk && typeof chunk === 'object' && 'content' in chunk) {
