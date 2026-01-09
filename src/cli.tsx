@@ -136,7 +136,20 @@ export function CLI() {
   // Store the current turn's tasks when answer starts streaming
   const currentTasksRef = useRef<Task[]>([]);
 
-  const messageHistoryRef = useRef<MessageHistory>(new MessageHistory(model));
+  const answerContextMode = getSetting('answerContextMode', 'summary') as
+    | 'summary'
+    | 'full'
+    | 'auto';
+  const answerTokenBudget = getSetting('answerContextTokenBudget', 800) as number;
+  const maxAnswerChars = getSetting('answerContextMaxChars', 2000) as number;
+
+  const messageHistoryRef = useRef<MessageHistory>(
+    new MessageHistory(model, {
+      answerContextMode,
+      answerTokenBudget,
+      maxAnswerChars,
+    })
+  );
 
   const { queue: queryQueue, enqueue, shift: shiftQueue, clear: clearQueue } = useQueryQueue();
 
